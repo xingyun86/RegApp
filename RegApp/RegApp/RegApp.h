@@ -26,6 +26,8 @@ public:
         lStatus &= RegSetValueExA(hKey, ("EnableLUA"), 0, REG_DWORD, (LPBYTE)&dwValue, sizeof(dwValue));
         dwValue = bEnabled ? 1 : 0;
         lStatus &= RegSetValueExA(hKey, ("PromptOnSecureDesktop"), 0, REG_DWORD, (LPBYTE)&dwValue, sizeof(dwValue));
+        dwValue = bEnabled ? 1 : 0;
+        lStatus &= RegSetValueExA(hKey, ("FilterAdministratorToken"), 0, REG_DWORD, (LPBYTE)&dwValue, sizeof(dwValue));
         lStatus &= RegCloseKey(hKey);
         return lStatus;
     }
@@ -36,9 +38,16 @@ public:
         DWORD dwValue = 0;
         LSTATUS lStatus = ERROR_SUCCESS;
         CHAR czFileName[MAX_PATH] = { 0 };
-        GetModuleFileNameA(NULL, czFileName, sizeof(czFileName) / sizeof(*czFileName));
         lStatus &= RegOpenKeyExA(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", 0, KEY_WRITE, &hKey);
-        lStatus &= RegSetValueExA(hKey, (strrchr(czFileName, '\\') + 1), 0, REG_SZ, (LPBYTE)czFileName, lstrlenA(czFileName) + 1);
+        if (bAuto == TRUE)
+        {
+            GetModuleFileNameA(NULL, czFileName, sizeof(czFileName) / sizeof(*czFileName));
+            lStatus &= RegSetValueExA(hKey, (strrchr(czFileName, '\\') + 1), 0, REG_SZ, (LPBYTE)czFileName, lstrlenA(czFileName) + 1);
+        }
+        else 
+        {
+            lStatus &= RegSetValueExA(hKey, (strrchr(czFileName, '\\') + 1), 0, REG_SZ, (LPBYTE)czFileName, lstrlenA(czFileName) + 1);
+        }
         lStatus &= RegCloseKey(hKey);
         return lStatus;
     }
